@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predição de Área de Estágio</title> <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .container-custom {
+            max-width: 700px; 
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="container-custom bg-white p-8 rounded-xl shadow-lg w-full">
+        <h1 class="text-3xl font-bold mb-8 text-center text-blue-600">Qual sua Área de Estágio Ideal?</h1> {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-md
+                                {% if category == 'error' %} bg-red-100 text-red-700 border border-red-300
+                                {% elif category == 'success' %} bg-green-100 text-green-700 border border-green-300
+                                {% else %} bg-blue-100 text-blue-700 border border-blue-300
+                                {% endif %}"
+                         role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('main.index') }}" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tecnologias/Ferramentas que você conhece:</label>
+                <div class="checkbox-grid p-4 border border-gray-300 rounded-lg max-h-60 overflow-y-auto">
+                    {% for tech in tecnologias_opts %}
+                    <label class="flex items-center space-x-2 text-sm text-gray-600 hover:bg-gray-50 p-1 rounded-md">
+                        <input type="checkbox" name="tecnologias_conhecidas" value="{{ tech }}"
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                               {% set current_selected_techs = form_data.getlist('tecnologias_conhecidas') if hasattr(form_data, 'getlist') else form_data.get('tecnologias_conhecidas', []) %}
+                               {% if tech in current_selected_techs %}checked{% endif %}>
+                        <span>{{ tech }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                 <p class="mt-1 text-xs text-gray-500">Selecione todas as tecnologias relevantes.</p>
+            </div>
+
+            <div>
+                <label for="aprendizado_recente" class="block text-sm font-medium text-gray-700 mb-1">Principal área de aprendizado/estudo recente:</label>
+                <select id="aprendizado_recente" name="aprendizado_recente" required
+                        class="mt-1 block w-full px-4 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out">
+                    <option value="" disabled {% if not form_data.get('aprendizado_recente') %}selected{% endif %}>Selecione uma categoria...</option>
+                    {% for cat in aprendizado_opts %}
+                    <option value="{{ cat }}" {% if cat == form_data.get('aprendizado_recente') %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="tipo_projeto" class="block text-sm font-medium text-gray-700 mb-1">Tipo de projeto mais significativo que você desenvolveu/participou:</label>
+                <select id="tipo_projeto" name="tipo_projeto" required
+                        class="mt-1 block w-full px-4 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out">
+                    <option value="" disabled {% if not form_data.get('tipo_projeto') %}selected{% endif %}>Selecione um tipo...</option>
+                    {% for proj in projeto_opts %}
+                    <option value="{{ proj }}" {% if proj == form_data.get('tipo_projeto') %}selected{% endif %}>{{ proj }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                    Prever Área
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-8 text-center border-t pt-6">
+            <p class="text-sm text-gray-600 mb-2">
+                O modelo de Inteligência Artificial precisa ser treinado com dados dos alunos.
+                Se é a primeira vez ou se os dados foram atualizados, treine o modelo:
+            </p>
+            <a href="{{ url_for('main.treinar') }}"
+               class="inline-block py-2 px-5 border border-green-600 rounded-lg text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                Treinar Modelo
+            </a>
+            <p class="mt-2 text-xs text-gray-500">
+                (Isso requer um arquivo <code>alunos.csv</code> atualizado na pasta <code>data</code> do servidor, com as colunas: tecnologias_conhecidas, aprendizado_recente, tipo_projeto, area_desejada)
+            </p>
+        </div>
+    </div>
+</body>
+</html>
